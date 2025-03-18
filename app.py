@@ -50,7 +50,7 @@ def get_Alunos():
 def get_Aluno(id):
     aluno = next((a for a in Alunos if a['id']==id), None)
     if aluno: 
-        return make_response(jsonify({'id': aluno['id'], 'nome': aluno['nome'] })),200
+        return make_response(jsonify({'id': aluno['id'], 'nome': aluno['nome'], 'data_nascimento': aluno['data_nascimento'], 'nota_primeiro_semestre': aluno['nota_primeiro_semestre'], 'nota_segundo_semestre': aluno['nota_segundo_semestre'], 'turma_id': aluno['turma_id'] })),200
     return make_response(jsonify({"erro": "Aluno não encontrado" })), 404
 
 #EXCLUI ALUNO POR ID(DELETE BY ID)
@@ -113,7 +113,7 @@ def get_Professores():
 def get_Professor(id):
     professor = next((p for p in Professores if p['id']==id), None)
     if professor: 
-        return make_response(jsonify({'id': professor['id'], 'nome': professor['nome']})),200
+        return make_response(jsonify({'id': professor['id'], 'nome': professor['nome'], 'idade': professor['idade'], 'data_nascimento': professor['data_nascimento'], 'disciplina': professor['disciplina'], 'salario': professor['salario']})),200
     return make_response(jsonify({"erro": "Professor não encontrado" })), 404
 
 #EXCLUI PROFESSOR POR ID(DELETE BY ID)
@@ -180,7 +180,7 @@ def get_Turmas():
 def get_Turma(id):
     turma = next((t for t in Turmas if t['id']==id), None)
     if turma: 
-        return make_response(jsonify({'id': turma['id'], 'nome': turma['nome']})),200
+        return make_response(jsonify({'id': turma['id'], 'nome': turma['nome'], 'turno': turma['turno'], 'professor_id': turma['professor_id']})),200
     return make_response(jsonify({"erro": "Turma não encontrada" })), 404
 
 
