@@ -6,22 +6,23 @@ professor_id_gen = count(start=1)
 turma_id_gen = count(start=1)
 
 # Bases de dados
-Alunos = []
-Professores = []
-Turmas = []
+alunos = []
+professores = []
+turmas = []
 
 # Funções para adicionar registros
-def add_aluno(nome, data_nascimento, nota_primeiro_semestre, nota_segundo_semestre, turma_id):
+def add_aluno(nome, data_nascimento, nota_primeiro_semestre, nota_segundo_semestre, turma_id, professor_id):
     novo_aluno = {
         'id': next(aluno_id_gen),
         'nome': nome,
         'data_nascimento': data_nascimento,
         'nota_primeiro_semestre': nota_primeiro_semestre,
         'nota_segundo_semestre': nota_segundo_semestre,
-        'turma_id': turma_id
+        'turma_id': turma_id,
+        'professor_id': professor_id  # <- novo campo incluído
     }
-    Alunos.append(novo_aluno)
-    return novo_aluno
+    alunos.append(novo_aluno)
+    return novo_aluno 
 
 def add_professor(nome, idade, data_nascimento, disciplina, salario):
     novo_professor = {
@@ -32,7 +33,7 @@ def add_professor(nome, idade, data_nascimento, disciplina, salario):
         'disciplina': disciplina,
         'salario': salario
     }
-    Professores.append(novo_professor)
+    professores.append(novo_professor)
     return novo_professor
 
 def add_turma(nome, turno, professor_id):
@@ -42,5 +43,5 @@ def add_turma(nome, turno, professor_id):
         'turno': turno,
         'professor_id': professor_id
     }
-    Turmas.append(nova_turma)
+    turmas.append(nova_turma)
     return nova_turma

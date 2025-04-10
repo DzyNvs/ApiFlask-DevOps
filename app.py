@@ -1,78 +1,97 @@
 from flask import Flask, jsonify, make_response, request 
-from bd import Alunos, Professores, Turmas, add_aluno, add_professor, add_turma
+from bd import alunos, professores, turmas, add_aluno, add_professor, add_turma
 
-app = Flask(__name__)
-app.config['JSON_SORT_KEYS'] = False
+ap = Flask(__name__)
+ap.config['JSON_SORT_KEYS'] = False
 
 #RESETA
 
-@app.route('/reseta', methods=['POST'])
+@ap.route('/reseta', methods=['POST'])
 def resetar_dados():
     # Limpa todas as listas
-    Alunos.clear()
-    Professores.clear()
-    Turmas.clear()
+    alunos.clear()
+    professores.clear()
+    turmas.clear()
 
     return make_response(jsonify({"mensagem": "Dados resetados com sucesso"}), 200)
 
 
-#ALUNOS
-#CREATE ALUNO(POST)
-@app.route('/Alunos', methods=['POST'])
-def create_Alunos():
+#aLUNOS
+# CREaTE ALUNO (POST)
+@ap.route('/alunos', methods=['POST'])
+def create_alunos():
     dados = request.json
 
-    # Verificar campos obrigatórios
-    campos_obrigatorios = ['nome', 'data_nascimento', 'nota_primeiro_semestre', 'nota_segundo_semestre', 'turma_id']
+    # Verificar campos obrigatórios, incluindo professor_id
+    campos_obrigatorios = [
+        'nome', 
+        'data_nascimento', 
+        'nota_primeiro_semestre', 
+        'nota_segundo_semestre', 
+        'turma_id',
+        'professor_id'
+    ]
+
     for campo in campos_obrigatorios:
         if campo not in dados:
-            return make_response(jsonify({"erro": f"Campo obrigatório '{campo}' está faltando"}), 400)
+            return make_response(
+                jsonify({"erro": f"Campo obrigatório '{campo}' está faltando"}), 
+                400
+            )
 
-    # Adicionar o aluno (simulando o banco de dados)
+    # Verificar se o professor existe
+    professor = get_professor_by_id(dados['professor_id'])
+    if not professor:
+        return make_response(
+            jsonify({"erro": "professor com o ID fornecido não existe"}), 
+            404
+        )
+
+    # adicionar o aluno (simulando o banco de dados)
     novo_aluno = add_aluno(
         nome=dados['nome'],
         data_nascimento=dados['data_nascimento'],
         nota_primeiro_semestre=dados['nota_primeiro_semestre'],
         nota_segundo_semestre=dados['nota_segundo_semestre'],
-        turma_id=dados['turma_id']
+        turma_id=dados['turma_id'],
+        professor_id=dados['professor_id']
     )
 
     return make_response(jsonify(novo_aluno), 201)
 
 
-#LISTA ALUNOS(GET)
-@app.route('/Alunos', methods=['GET'])
-def get_Alunos():
-    return make_response (jsonify(Alunos)),200
+#LISTa aLUNOS(GET)
+@ap.route('/alunos', methods=['GET'])
+def get_alunos():
+    return make_response (jsonify(alunos)),200
 
-#PROCURA ALUNO POR ID(GET BY ID)
-@app.route('/Alunos/<int:id>', methods=['GET'])
-def get_Aluno(id):
-    aluno = next((a for a in Alunos if a['id']==id), None)
+#pROCURa ALUNO POR ID(GET BY ID)
+@ap.route('/alunos/<int:id>', methods=['GET'])
+def get_aluno(id):
+    aluno = next((a for a in alunos if a['id']==id), None)
     if aluno: 
         return make_response(jsonify({'id': aluno['id'], 'nome': aluno['nome'], 'data_nascimento': aluno['data_nascimento'], 'nota_primeiro_semestre': aluno['nota_primeiro_semestre'], 'nota_segundo_semestre': aluno['nota_segundo_semestre'], 'turma_id': aluno['turma_id'] })),200
-    return make_response(jsonify({"erro": "Aluno não encontrado" })), 404
+    return make_response(jsonify({"erro": "aluno não encontrado" })), 404
 
-#EXCLUI ALUNO POR ID(DELETE BY ID)
-
-@app.route('/Alunos/<int:id>', methods=['DELETE'])
+#EXCLUI ALUNO pOR ID(DELETE BY ID)
+@ap.route('/alunos/<int:id>', methods=['DELETE'])
 def deletar_aluno_por_id(id):
-        global Alunos
-        aluno = next((a for a in Alunos if a['id'] == id), None)
+        global alunos
+        aluno = next((a for a in alunos if a['id'] == id), None)
         if aluno:
-            Alunos.remove(aluno)
-            return make_response(jsonify({"mensagem": f"Aluno com ID {id} deletado"}), 200)
-        return make_response(jsonify({"erro": "Aluno não encontrado"}), 404)
+            alunos.remove(aluno)
+            return make_response(jsonify({"mensagem": f"aluno com ID {id} deletado"}), 200)
+        return make_response(jsonify({"erro": "aluno não encontrado"}), 404)
              
 
 
-#EDITA ALUNO POR ID(PUT)
-@app.route('/Alunos/<int:id>', methods=['PUT'])
-def editar_Aluno(id):
-    aluno = next((a for a in Alunos if a['id'] == id), None)
+#EDITa ALUNO POR ID(PUT)
+@ap.route('/alunos/<int:id>', methods=['PUT'])
+def editar_aluno(id):
+    aluno = next((a for a in alunos if a['id'] == id), None)
 
     if not aluno:
-        return make_response(jsonify({"erro": "Aluno não encontrado"}), 404)
+        return make_response(jsonify({"erro": "aluno não encontrado"}), 404)
 
     dados = request.json
 
@@ -82,13 +101,13 @@ def editar_Aluno(id):
     aluno['nota_segundo_semestre'] = dados.get('nota_segundo_semestre', aluno['nota_segundo_semestre'])
     aluno['turma_id'] = dados.get('turma_id', aluno['turma_id'])
 
-    return make_response(jsonify({"mensagem": f"Aluno com ID {id} atualizado com sucesso"}), 200)
+    return make_response(jsonify({"mensagem": f"aluno com ID {id} atualizado com sucesso"}), 200)
 
 
-#Professores 
-#CREATE PROFESSOR(POST)
-@app.route('/Professores', methods=['POST'])
-def create_Professores():
+#professores 
+#CREaTE pROFESSOR(POST)
+@ap.route('/professores', methods=['POST'])
+def create_professores():
     dados = request.json
 
     # Chamando a função do bd.py para adicionar o professor
@@ -103,36 +122,36 @@ def create_Professores():
     return make_response(jsonify(novo_professor), 201)
 
 
-#LISTA PROFESSORES(GET)
-@app.route('/Professores', methods=['GET'])
-def get_Professores():
-    return make_response (jsonify(Professores)),200
+#LISTa pROFESSORES(GET)
+@ap.route('/professores', methods=['GET'])
+def get_professores():
+    return make_response (jsonify(professores)),200
 
-#PROCURA PROFESSOR POR ID(POST BY ID)
-@app.route('/Professores/<int:id>', methods=['GET'])
-def get_Professor(id):
-    professor = next((p for p in Professores if p['id']==id), None)
-    if professor: 
-        return make_response(jsonify({'id': professor['id'], 'nome': professor['nome'], 'idade': professor['idade'], 'data_nascimento': professor['data_nascimento'], 'disciplina': professor['disciplina'], 'salario': professor['salario']})),200
-    return make_response(jsonify({"erro": "Professor não encontrado" })), 404
+#pROCURa pROFESSOR pOR ID(POST BY ID)
+@ap.route('/professores/<int:id>', methods=['GET'])
+def get_professor_by_id(professor_id):
+    for professor in professores:
+        if professor["id"] == professor_id:
+            return professor
+    return None
 
-#EXCLUI PROFESSOR POR ID(DELETE BY ID)
-@app.route('/Professores/<int:id>', methods=['DELETE'])
+#EXCLUI pROFESSOR pOR ID(DELETE BY ID)
+@ap.route('/professores/<int:id>', methods=['DELETE'])
 def deletar_professor_por_id(id):
-    global Professores
-    professor = next((p for p in Professores if p ['id']==id), None)
+    global professores
+    professor = next((p for p in professores if p ['id']==id), None)
     if professor: 
-        Professores.remove(professor)
-        return make_response(jsonify({"mensagem": f"Professor com ID {id} deletado"})),200
-    return make_response(jsonify({"erro": 'Professor não encontrado'})), 400
+        professores.remove(professor)
+        return make_response(jsonify({"mensagem": f"professor com ID {id} deletado"})),200
+    return make_response(jsonify({"erro": 'professor não encontrado'})), 400
 
-#EDITA PROFESSOR POR ID(PUT BY ID)
-@app.route('/Professores/<int:id>', methods=['PUT'])
-def editar_Professor(id):
-    professor = next((p for p in Professores if p['id'] == id), None)
+#EDITa pROFESSOR pOR ID(PUT BY ID)
+@ap.route('/professores/<int:id>', methods=['PUT'])
+def editar_professor(id):
+    professor = next((p for p in professores if p['id'] == id), None)
 
     if not professor:
-        return make_response(jsonify({"erro": "Professor não encontrado"}), 404)
+        return make_response(jsonify({"erro": "professor não encontrado"}), 404)
 
     dados = request.json
 
@@ -142,12 +161,12 @@ def editar_Professor(id):
     professor['disciplina'] = dados.get('disciplina', professor['disciplina'])
     professor['salario'] = dados.get('salario', professor['salario'])
 
-    return make_response(jsonify({"mensagem": f"Professor com ID {id} atualizado com sucesso"})), 200
+    return make_response(jsonify({"mensagem": f"professor com ID {id} atualizado com sucesso"})), 200
 
 
-#Turmas
-#CREATE TURMAS(POST)
-@app.route('/Turmas', methods=['POST'])
+#turmas
+#CREaTE turmas(POST)
+@ap.route('/turmas', methods=['POST'])
 def criar_turma():
     if not request.json:
         return jsonify({"erro": "Dados inválidos ou ausentes"}), 400
@@ -170,34 +189,34 @@ def criar_turma():
         return jsonify({"erro": f"Erro ao criar turma: {str(e)}"}), 500
 
 
-#LISTA TURMAS(GET)
-@app.route('/Turmas', methods=['GET'])
-def get_Turmas():
-    return make_response (jsonify(Turmas))
+#LISTa turmas(GET)
+@ap.route('/turmas', methods=['GET'])
+def get_turmas():
+    return make_response (jsonify(turmas))
 
-#PROCURA TURMA POR ID(GET BY ID)
-@app.route('/Turmas/<int:id>', methods=['GET'])
+#pROCURa TURMa pOR ID(GET BY ID)
+@ap.route('/turmas/<int:id>', methods=['GET'])
 def get_Turma(id):
-    turma = next((t for t in Turmas if t['id']==id), None)
+    turma = next((t for t in turmas if t['id']==id), None)
     if turma: 
         return make_response(jsonify({'id': turma['id'], 'nome': turma['nome'], 'turno': turma['turno'], 'professor_id': turma['professor_id']})),200
     return make_response(jsonify({"erro": "Turma não encontrada" })), 404
 
 
-#EXCLUI TURMA PELO ID(DELETE BY ID)
-@app.route('/Turmas/<int:id>', methods=['DELETE'])
+#EXCLUI TURMa pELO ID(DELETE BY ID)
+@ap.route('/turmas/<int:id>', methods=['DELETE'])
 def deletar_turma_por_id(id):
-    global Turmas
-    turma = next((t for t in Turmas if t ['id']==id), None)
+    global turmas
+    turma = next((t for t in turmas if t ['id']==id), None)
     if turma: 
-        Turmas.remove(turma)
+        turmas.remove(turma)
         return make_response(jsonify({"mensagem": f"Turma com ID {id} deletado"})),200
     return make_response(jsonify({"erro": 'Turma não encontrada'})), 400
 
-#EDITA TURMA POR ID(PUT BY ID)
-@app.route('/Turmas/<int:id>', methods=['PUT'])
-def editar_Turmas(id):
-    turma = next((t for t in Turmas if t['id'] == id), None)
+#EDITa TURMa pOR ID(PUT BY ID)
+@ap.route('/turmas/<int:id>', methods=['PUT'])
+def editar_turmas(id):
+    turma = next((t for t in turmas if t['id'] == id), None)
 
     if not turma:
         return make_response(jsonify({"erro": "Turma não encontrada"}), 404)
@@ -214,4 +233,4 @@ def editar_Turmas(id):
 
 
 if __name__  == '__main__': 
-    app.run(debug=True)
+    ap.run(debug=True)
