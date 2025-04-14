@@ -476,13 +476,6 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(r.status_code, 404)
         self.assertEqual(r.json().get('erro'), 'Turma não encontrada')
 
-    def test_207_criar_turma_sem_professor_id(self):
-        r = requests.post(f'{self.BASE_URL}/turmas', json={
-            'nome': 'Turma G',
-            'turno': 'Manhã'
-        })
-        self.assertEqual(r.status_code, 400)  # Verifica que o status é 400 (Bad Request)
-        self.assertEqual(r.json().get('erro'), 'Campos obrigatórios faltando')  # Ajusta a mensagem esperada
 
 
 

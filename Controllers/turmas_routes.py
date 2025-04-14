@@ -23,19 +23,13 @@ def get_turma(id_turma):
 # Rota para criar uma turma
 @turmas_blueprint.route('/turmas', methods=['POST'])
 def create_turma():
+    data = request.json
     try:
-        data = request.json
-        
-        # Verifica se o campo 'professor_id' está presente nos dados enviados
-        if 'professor_id' not in data:
-            raise KeyError('professor_id')
-        
-        nova_turma = adicionar_turma(data)
+        nova_turma = adicionar_turma(data)  # Função no model para adicionar a turma
         return jsonify(nova_turma), 201
+    except KeyError:
+        return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
 
-    except KeyError as e:
-        # Retorna uma mensagem de erro detalhando o campo ausente
-        return jsonify({'erro': f"Campo obrigatório '{e.args[0]}' está faltando"}), 400
 
 
 
