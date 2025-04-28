@@ -1,47 +1,53 @@
-from itertools import count
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from config import Config
 
-# Geradores automáticos de ID
-aluno_id_gen = count(start=1)
-professor_id_gen = count(start=1)
-turma_id_gen = count(start=1)
+# Criação da instância do banco de dados
+db = SQLAlchemy()
 
-# Bases de dados
-alunos = []
-professores = []
-turmas = []
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)  # Carrega as configurações da classe Config
 
-# Funções para adicionar registros
-def add_aluno(nome, data_nascimento, nota_primeiro_semestre, nota_segundo_semestre, turma_id, professor_id):
-    novo_aluno = {
-        'id': next(aluno_id_gen),
-        'nome': nome,
-        'data_nascimento': data_nascimento,
-        'nota_primeiro_semestre': nota_primeiro_semestre,
-        'nota_segundo_semestre': nota_segundo_semestre,
-        'turma_id': turma_id,
-        'professor_id': professor_id  # <- novo campo incluído
-    }
-    alunos.append(novo_aluno)
-    return novo_aluno 
+    # Inicializa a extensão SQLAlchemy com a aplicação Flask
+    db.init_app(app)
 
-def add_professor(nome, idade, data_nascimento, disciplina, salario):
-    novo_professor = {
-        'id': next(professor_id_gen),
-        'nome': nome,
-        'idade': idade,
-        'data_nascimento': data_nascimento,
-        'disciplina': disciplina,
-        'salario': salario
-    }
-    professores.append(novo_professor)
-    return novo_professor
+    with app.app_context():
+        # Cria as tabelas no banco de dados
+        db.create_all()
 
-def add_turma(nome, turno, professor_id):
-    nova_turma = {
-        'id': next(turma_id_gen),
-        'nome': nome,
-        'turno': turno,
-        'professor_id': professor_id
-    }
-    turmas.append(nova_turma)
-    return nova_turma
+    return app
+
+# Definição dos modelos
+class Aluno(db.Model):
+    __tablename__ = 'alunos'  # Nome da tabela no banco de dados
+
+    id = db.Column(db.Integer, primary_key=True)  # Chave primária
+    nome = db.Column(db.String(100), nullable=False)  # Nome do aluno
+    idade = db.Column(db.Integer)  # Idade do aluno
+    data_nascimento = db.Column(db.String(10), nullable=False)  # Data de nascimento
+    nota_primeiro_semestre = db.Column(db.Float, nullable=False)  # Nota do primeiro semestre
+    nota_segundo_semestre = db.Column(db.Float, nullable=False)  # Nota do segundo semestre
+    turma_id = db.Column(db.Integer, db.ForeignKey('turmas.id'))  # Chave estrangeira para turmas
+    professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'))  # Chave estrangeira para professores
+
+class Professor(db.Model):
+    __tablename__ = 'professores'  # Nome da tabela no banco de dados
+
+    id = db.Column(db.Integer, primary_key=True)  # Chave primária
+    nome = db.Column(db.String(100), nullable=False)  # Nome do professor
+    idade = db.Column(db.Integer)  # Idade do professor
+    data_nascimento = db.Column(db.String(10), nullable=False)  # Data de nascimento
+    disciplina = db.Column(db.String(100), nullable=False)  # Disciplina que leciona
+    salario = db.Column(db.Float, nullable=False)  # Salário do professor
+
+class Turma(db.Model):
+    __tablename__ = 'turmas'  # Nome da tabela no banco de dados
+
+    id = db.Column(db.Integer, primary_key=True)  # Chave primária
+    nome = db.Column(db.String(100), nullable=False)  # Nome da turma
+    turno = db.Column(db.String(50), nullable=False)  # Turno da turma
+    professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'))  # Chave estrangeira para professores
+
+    # Relacionamentos
+    alunos = db.relationship('Aluno', backref='turma', lazy=True)  # Relacionamento com Aluno
