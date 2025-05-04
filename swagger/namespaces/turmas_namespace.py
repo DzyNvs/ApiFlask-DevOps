@@ -3,19 +3,20 @@ from Models.model_turmas import listar_turmas, turma_por_id, adicionar_turma, at
 
 turmas_ns = Namespace("Turmas", description="Operações relacionadas às turmas")
 
+# Modelo de entrada para criação/atualização de turmas
 turma_model = turmas_ns.model("Turma", {
     "nome": fields.String(required=True, description="Nome da turma"),
     "turno": fields.String(required=True, description="Turno da turma"),
-    "professor_id": fields.Integer(required= True, description="ID do professor associado"),
+    "professor_id": fields.Integer(required=True, description="ID do professor associado"),
 })
 
+# Modelo de saída para listar e obter turmas
 turma_output_model = turmas_ns.model("TurmaOutput", {
-    "id": fields.Integer(description= "ID da turma"),
-    "nome": fields.String(description= "Nome da turma"),
+    "id": fields.Integer(description="ID da turma"),
+    "nome": fields.String(description="Nome da turma"),
     "turno": fields.String(description="Turno da turma"),
-    "professor_id": fields.Integer( description="ID do professor associado"),
+    "professor_id": fields.Integer(description="ID do professor associado"),
 })
-
 
 @turmas_ns.route("/")
 class TurmasResource(Resource):
@@ -25,28 +26,26 @@ class TurmasResource(Resource):
         return listar_turmas()
 
     @turmas_ns.expect(turma_model)
+    @turmas_ns.marshal_with(turma_output_model, code=201)
     def post(self):
-        """Cria uma novo turma"""
+        """Cria uma nova turma"""
         data = turmas_ns.payload
-        response, status_code = adicionar_turma(data)
-        return response, status_code
-    
+        return adicionar_turma(data), 201  # Agora sem desempacotamento incorreto
     
 @turmas_ns.route("/<int:id_turma>")
-class ProfessorIdResource(Resource):
+class TurmasIdResource(Resource):
     @turmas_ns.marshal_with(turma_output_model)
     def get(self, id_turma):
         """Obtém uma turma pelo ID"""
         return turma_por_id(id_turma)
 
     @turmas_ns.expect(turma_model)
+    @turmas_ns.marshal_with(turma_output_model)
     def put(self, id_turma):
         """Atualiza uma turma pelo ID"""
         data = turmas_ns.payload
-        atualizar_turma(id_turma, data)
-        return data, 200
+        return atualizar_turma(id_turma, data), 200
 
     def delete(self, id_turma):
         """Exclui uma turma pelo ID"""
-        excluir_turma(id_turma)
-        return {"message": "Turma excluída com sucesso"}, 200
+        return excluir_turma(id_turma), 200

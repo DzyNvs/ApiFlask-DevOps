@@ -1,3 +1,4 @@
+import os
 from bd import create_app, db  # Importando a função create_app
 from Controllers.alunos_routes import alunos_blueprint
 from Controllers.professores_routes import professores_blueprint
@@ -9,9 +10,9 @@ app = create_app()  # Cria a instância da aplicação
 with app.app_context():
     db.create_all()
 # Registro dos Blueprints
-app.register_blueprint(alunos_blueprint, url_prefix='/api/alunos')
-app.register_blueprint(professores_blueprint, url_prefix='/api/professores')
-app.register_blueprint(turmas_blueprint, url_prefix='/api/turmas')
+app.register_blueprint(alunos_blueprint, url_prefix='/api')
+app.register_blueprint(professores_blueprint, url_prefix='/api')
+app.register_blueprint(turmas_blueprint, url_prefix='/api')
 
 configure_swagger(app)
 
