@@ -1,46 +1,21 @@
-from itertools import count
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from config import Config
+from flask_cors import CORS
 
-# Geradores automáticos de ID
-aluno_id_gen = count(start=1)
-professor_id_gen = count(start=1)
-turma_id_gen = count(start=1)
+# Criação da instância do banco de dados
+db = SQLAlchemy()
 
-# Bases de dados
-Alunos = []
-Professores = []
-Turmas = []
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)  # Carrega as configurações da classe Config
 
-# Funções para adicionar registros
-def add_aluno(nome, data_nascimento, nota_primeiro_semestre, nota_segundo_semestre, turma_id):
-    novo_aluno = {
-        'id': next(aluno_id_gen),
-        'nome': nome,
-        'data_nascimento': data_nascimento,
-        'nota_primeiro_semestre': nota_primeiro_semestre,
-        'nota_segundo_semestre': nota_segundo_semestre,
-        'turma_id': turma_id
-    }
-    Alunos.append(novo_aluno)
-    return novo_aluno
+    # Inicializa a extensão SQLAlchemy com a aplicação Flask
+    db.init_app(app)
 
-def add_professor(nome, idade, data_nascimento, disciplina, salario):
-    novo_professor = {
-        'id': next(professor_id_gen),
-        'nome': nome,
-        'idade': idade,
-        'data_nascimento': data_nascimento,
-        'disciplina': disciplina,
-        'salario': salario
-    }
-    Professores.append(novo_professor)
-    return novo_professor
+    with app.app_context():
+        # Cria as tabelas no banco de dados
+        db.create_all()
 
-def add_turma(nome, turno, professor_id):
-    nova_turma = {
-        'id': next(turma_id_gen),
-        'nome': nome,
-        'turno': turno,
-        'professor_id': professor_id
-    }
-    Turmas.append(nova_turma)
-    return nova_turma
+    return app
+
