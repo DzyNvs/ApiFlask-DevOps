@@ -1,17 +1,23 @@
 from bd import db
+from datetime import datetime, date
 
 class ProfessorNaoEncontrado(Exception):
     pass
 
 class Professor(db.Model):
     __tablename__ = 'professores'  # Nome da tabela no banco de dados
+    __table_args__ = {'extend_existing': True}  # Evita erro de redefinição
 
     id = db.Column(db.Integer, primary_key=True)  # Chave primária
     nome = db.Column(db.String(100), nullable=False)  # Nome do professor
-    idade = db.Column(db.Integer)  # Idade do professor
-    data_nascimento = db.Column(db.String(10), nullable=False)  # Data de nascimento
-    disciplina = db.Column(db.String(100), nullable=False)  # Disciplina que leciona
-    salario = db.Column(db.Float, nullable=False)  # Salário do professor
+    idade = db.Column(db.Integer, nullable= True)  # Idade do professor
+    data_nascimento = db.Column(db.String(10), nullable=True)  # Data de nascimento
+    disciplina = db.Column(db.String(100), nullable=True)  # Disciplina que leciona
+    salario = db.Column(db.Float, nullable=True)  # Salário do professor
+    
+def calcular_idade(self): 
+    today = date.today()
+    return today.year - self.data_nascimento.year - ((today.month, today.day) < (self.data_nascimento.month, self.data_nascimento.day))
 
 def listar_professores():
     """Retorna todos os professores do banco de dados."""

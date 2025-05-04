@@ -4,18 +4,10 @@ import requests
 
 class TestAPI(unittest.TestCase):
 
-    BASE_URL = 'http://127.0.0.1:5000'
+    BASE_URL = 'http://127.0.0.1:5000/api'
 
     def setUp(self):
-        # Restaura o estado inicial do servidor antes de cada teste
-        r_reset_alunos = requests.post(f'{self.BASE_URL}/reseta_alunos')
-        self.assertEqual(r_reset_alunos.status_code, 200)
-
-        r_reset_professores = requests.post(f'{self.BASE_URL}/reseta_professores')
-        self.assertEqual(r_reset_professores.status_code, 200)
-
-        r_reset_turmas = requests.post(f'{self.BASE_URL}/reseta_turmas')
-        self.assertEqual(r_reset_turmas.status_code, 200)
+        
 
         # Cria dois professores
         r_prof1 = requests.post(f'{self.BASE_URL}/professores', json={
@@ -475,9 +467,6 @@ class TestAPI(unittest.TestCase):
         r = requests.get(f'{self.BASE_URL}/turmas/999')
         self.assertEqual(r.status_code, 404)
         self.assertEqual(r.json().get('erro'), 'Turma não encontrada')
-
-
-
 
 
     def test_208_turmas_nao_confundir_com_professores(self):

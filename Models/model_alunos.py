@@ -1,10 +1,12 @@
 from bd import db
+from datetime import datetime, date
 
 class AlunoNaoEncontrado(Exception):
     pass
 
 class Aluno(db.Model):
     __tablename__ = 'alunos'  # Nome da tabela no banco de dados
+    __table_args__ = {'extend_existing': True}  # Evita redefinição da tabela
 
     id = db.Column(db.Integer, primary_key=True)  # Chave primária
     nome = db.Column(db.String(100), nullable=False)  # Nome do aluno
@@ -14,6 +16,8 @@ class Aluno(db.Model):
     nota_segundo_semestre = db.Column(db.Float, nullable=False)  # Nota do segundo semestre
     turma_id = db.Column(db.Integer, db.ForeignKey('turmas.id'))  # Chave estrangeira para turmas
     professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'))  # Chave estrangeira para professores
+    
+    turma = db.relationship("Turma", back_populates="alunos")
 
 def listar_alunos():
     """Retorna todos os alunos do banco de dados."""
@@ -25,6 +29,10 @@ def aluno_por_id(id_aluno):
     if not aluno:
         raise AlunoNaoEncontrado
     return aluno
+
+def calcular_idade(self): 
+    today = date.today()
+    return today.year - self.data_nascimento.year - ((today.month, today.day) < (self.data_nascimento.month, self.data_nascimento.day))
 
 def adicionar_aluno(data):
     """Adiciona um novo aluno ao banco de dados."""

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from Models.model_professores import (
-    ProfessorNaoEncontrado, listar_professores, professor_por_id,
-    adicionar_professor, atualizar_professor, excluir_professor, professores
+    Professor, listar_professores, professor_por_id,
+    adicionar_professor, atualizar_professor, excluir_professor
 )
 
 professores_blueprint = Blueprint('professores', __name__)
@@ -17,44 +17,29 @@ def get_professor(id_professor):
     try:
         professor = professor_por_id(id_professor)
         return jsonify(professor)
-    except ProfessorNaoEncontrado:
+    except:
         return jsonify({'erro': 'Professor não encontrado'}), 404
 
 # Rota para criar um professor
 @professores_blueprint.route('/professores', methods=['POST'])
 def create_professor():
+    data = request.json
     try:
-        data = request.json
-
-        # Validação de ID duplicado
-        if 'id' in data and any(professor['id'] == data['id'] for professor in professores):
-            return jsonify({'erro': 'ID já utilizado'}), 400  # Retorna erro 400 se o ID já existir
-
-        # Caso não haja duplicidade, cria o professor
-        novo_professor = adicionar_professor(data)
-        return jsonify(novo_professor), 201  # Retorna sucesso com status 201
+        novo_professor = adicionar_professor(data)  # Função no model para criar o professor
+        return jsonify(novo_professor), 201
     except KeyError as e:
-        return jsonify({'erro': f"Campo obrigatório '{e.args[0]}' está faltando"}), 400  # Valida campos obrigatórios
-
-
-
-
-
+        return jsonify({'erro': f"Campo obrigatório '{e.args[0]}' está faltando"}), 400
 
 # Rota para atualizar um professor pelo ID
 @professores_blueprint.route('/professores/<int:id_professor>', methods=['PUT'])
-def update_professor(id_professor):
+def atualizar_professor_route(id_professor):
     try:
+        professor = professor_por_id(id_professor)  # Função para buscar o professor pelo ID
         data = request.json
-        professor = professor_por_id(id_professor)  # Busca o professor por ID
-        professor.update(data)  # Atualiza os campos do professor
+        professor.update(data)
         return jsonify({'mensagem': f'Professor com ID {id_professor} atualizado com sucesso'}), 200
-    except ProfessorNaoEncontrado:
+    except:
         return jsonify({'erro': 'Professor não encontrado'}), 404
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 400
- 
-
 
 # Rota para deletar um professor pelo ID
 @professores_blueprint.route('/professores/<int:id_professor>', methods=['DELETE'])
@@ -62,11 +47,5 @@ def delete_professor(id_professor):
     try:
         excluir_professor(id_professor)
         return jsonify({'mensagem': f'Professor com ID {id_professor} deletado'}), 200
-    except ProfessorNaoEncontrado:
+    except:
         return jsonify({'erro': 'Professor não encontrado'}), 404
-
-@professores_blueprint.route('/reseta_professores', methods=['POST'])
-def reset_professores():
-    professores.clear()  
-    return jsonify({'mensagem': 'Lista de professores resetada com sucesso'}), 200
-

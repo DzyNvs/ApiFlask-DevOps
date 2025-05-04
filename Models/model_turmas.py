@@ -1,29 +1,31 @@
 from bd import db
+from Models.model_alunos import Aluno  # Importação correta para relacionamento
 
 class TurmaNaoEncontrada(Exception):
     pass
 
 class Turma(db.Model):
-    __tablename__ = 'turmas'  # Nome da tabela no banco de dados
+    __tablename__ = 'turmas'
+    __table_args__ = {'extend_existing': True}  # Evita redefinição da tabela
 
-    id = db.Column(db.Integer, primary_key=True)  # Chave primária
-    nome = db.Column(db.String(100), nullable=False)  # Nome da turma
-    turno = db.Column(db.String(50), nullable=False)  # Turno da turma
-    professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'))  # Chave estrangeira para professores
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    turno = db.Column(db.String(50), nullable=False)
+    professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'))
 
-    # Relacionamentos
-    alunos = db.relationship('Aluno', backref='turma', lazy=True)  # Relacionamento com Aluno
+    # Relacionamento com Alunos
+    alunos = db.relationship('Aluno', backref='turma', lazy=True)
 
 def listar_turmas():
     """Retorna todas as turmas do banco de dados."""
-    return Turma.query.all()  # Retorna todos os registros da tabela turmas
+    return [turma.__dict__ for turma in Turma.query.all()]  # Corrigido para retorno JSON serializável
 
 def turma_por_id(id_turma):
     """Retorna uma turma pelo ID."""
-    turma = Turma.query.get(id_turma)  # Busca a turma pelo ID
+    turma = Turma.query.get(id_turma)
     if not turma:
         raise TurmaNaoEncontrada
-    return turma
+    return turma.__dict__  # Retorno JSON serializável
 
 def adicionar_turma(data):
     """Adiciona uma nova turma ao banco de dados."""
@@ -32,20 +34,27 @@ def adicionar_turma(data):
         turno=data['turno'],
         professor_id=data['professor_id']
     )
-    db.session.add(nova_turma)  # Adiciona a nova turma à sessão
-    db.session.commit()  # Salva as alterações no banco de dados
-    return nova_turma
+    db.session.add(nova_turma)
+    db.session.commit()
+    return nova_turma.__dict__
 
 def atualizar_turma(id_turma, data):
     """Atualiza os dados de uma turma existente."""
-    turma = turma_por_id(id_turma)  # Busca a turma pelo ID
-    turma.nome = data.get('nome', turma.nome)  # Atualiza o nome se fornecido
-    turma.turno = data.get('turno', turma.turno)  # Atualiza o turno se fornecido
-    turma.professor_id = data.get('professor_id', turma.professor_id)  # Atualiza o professor se fornecido
-    db.session.commit()  # Salva as alterações no banco de dados
+    turma = Turma.query.get(id_turma)
+    if not turma:
+        raise TurmaNaoEncontrada
+
+    turma.nome = data.get('nome', turma.nome)
+    turma.turno = data.get('turno', turma.turno)
+    turma.professor_id = data.get('professor_id', turma.professor_id)
+    db.session.commit()
+    return turma.__dict__
 
 def excluir_turma(id_turma):
     """Remove uma turma do banco de dados."""
-    turma = turma_por_id(id_turma)  # Busca a turma pelo ID
-    db.session.delete(turma)  # Remove a turma da sessão
-    db.session.commit()  # Salva as alterações no banco de dados
+    turma = Turma.query.get(id_turma)
+    if not turma:
+        raise TurmaNaoEncontrada
+    db.session.delete(turma)
+    db.session.commit()
+    return {'mensagem': f'Turma com ID {id_turma} deletada'}
