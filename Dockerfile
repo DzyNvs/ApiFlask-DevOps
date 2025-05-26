@@ -1,4 +1,4 @@
-# Usa uma versão mais recente do Python
+#Usa uma versão mais recente do Python
 FROM python:3.9
 
 # Define o diretório de trabalho dentro do contêiner

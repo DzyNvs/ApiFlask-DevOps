@@ -10,6 +10,9 @@ class Turma(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
+    materia = db.Column(db.String(20), nullable=False)
+    descricao = db.Column(db.String(100), nullable=False)
+    ativo = db.Column(db.String(20), nullable=False)
     turno = db.Column(db.String(50), nullable=False)
     professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'))
 
@@ -20,6 +23,9 @@ class Turma(db.Model):
         return {
             "id": self.id,
             "nome": self.nome,
+            "materia": self.materia,
+            "descricao": self.descricao,
+            "ativo": self.ativo,
             "turno": self.turno,
             "professor_id": self.professor_id,
         }
@@ -39,6 +45,9 @@ def adicionar_turma(data):
     """Adiciona uma nova turma ao banco de dados."""
     nova_turma = Turma(
         nome=data['nome'],
+        materia=data['materia'],
+        descricao=data['descricao'],
+        ativo=data['ativo'],
         turno=data['turno'],
         professor_id=data['professor_id']
     )
@@ -53,6 +62,9 @@ def atualizar_turma(id_turma, data):
         raise TurmaNaoEncontrada(f"Turma com ID {id_turma} não encontrada.")
 
     turma.nome = data.get('nome', turma.nome)
+    turma.materia = data.get('materia', turma.materia)
+    turma.descricao = data.get('descricao', turma.descricao)
+    turma.ativo = data.get('ativo', turma.ativo)
     turma.turno = data.get('turno', turma.turno)
     turma.professor_id = data.get('professor_id', turma.professor_id)
     
