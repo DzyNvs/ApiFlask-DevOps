@@ -10,9 +10,9 @@ app = create_app()  # Cria a instância da aplicação
 with app.app_context():
     db.create_all()
 # Registro dos Blueprints
-app.register_blueprint(alunos_blueprint, url_prefix='/api')
-app.register_blueprint(professores_blueprint, url_prefix='/api')
-app.register_blueprint(turmas_blueprint, url_prefix='/api')
+app.register_blueprint(alunos_blueprint, url_prefix='/api/alunos')
+app.register_blueprint(professores_blueprint, url_prefix='/api/professores')
+app.register_blueprint(turmas_blueprint, url_prefix='/api/turmas')
 
 configure_swagger(app)
 
